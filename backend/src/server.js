@@ -5,7 +5,11 @@ import path from 'path';
 import { connectDB } from './lib/db.js';
 import cors from 'cors';
 import {serve} from 'inngest/express'
+import {clerkMiddleware} from '@clerk/express';
 import { inngest, functions } from './lib/ingest.js';
+import { protectRoute } from './middleware/protectRoute.js';
+import chatRoutes from './routes/chatRoutes.js';
+
 
 const app = express();
 
@@ -16,7 +20,8 @@ app.use(express.json());
 
 // credentials:true meaning that the server should accept cookies and authentication information from the client
 app.use(cors({origin:ENV.CLIENT_URL, credentials:true}));
-
+// Clerk middleware for authentication
+app.use(clerkMiddleware());// this will add req.auth object to all incoming requests: re.auth()
 // Inngest webhook endpoint
 app.use('/api/inngest', serve({client: inngest, functions} ) )
 
@@ -25,6 +30,10 @@ app.get('/health', (req, res) => {
 });
 app.get('/books', (req, res) => {
     res.status(200).json({ message: 'this is the books end point' });
+});
+//when you pass an array of middlewares to Express,it automatically flattens and executes them in sequence
+app.get('/video-calls',protectRoute , (req, res) => {
+    res.status(200).json({ message: 'this is the video calls protected end point' });
 });
 
 
