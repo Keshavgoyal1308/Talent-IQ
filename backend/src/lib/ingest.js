@@ -24,6 +24,8 @@ const SyncUser= inngest.createFunction(
 
                 await upsertStreamUser({
                     id: newUser.clerkId.toString(),name: newUser.name, image: newUser.profileImage});
+
+                    // Challenge:After Completing Project I will add feature to user to send email on signup
     }
 )
 
