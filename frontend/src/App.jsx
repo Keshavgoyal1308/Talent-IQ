@@ -4,16 +4,22 @@ import { Routes, Route, Navigate } from 'react-router';
 import HomePage from './pages/Homepage.jsx';
 import AboutPage from './pages/Aboutpage.jsx';
 import ProblemsPage from './pages/Problemspage.jsx';
+import DasboardPage from './pages/Dashboardpage.jsx';
 import { useUser } from '@clerk/clerk-react';
 import { Toaster } from 'react-hot-toast';
 
 function App() {
  
- const {isSignedIn}=useUser();
+ const {isSignedIn, isLoaded}=useUser();
+
+ //this will prevent flicker effect why -> because it waits for the user state to load before rendering any routes
+if(!isLoaded) return null;
+
   return (
     <>
     <Routes>
-        <Route path="/" element={<HomePage />} />
+        <Route path="/" element={!isSignedIn ? <HomePage /> : <Navigate to="/dashboard" />} />
+        <Route path="/dashboard" element={isSignedIn ? <DasboardPage /> : <Navigate to="/" />} />
         <Route path="/about" element={<AboutPage />} />
         <Route path="/problems" element={isSignedIn ? <ProblemsPage /> : <Navigate to="/" />} />
     </Routes>
