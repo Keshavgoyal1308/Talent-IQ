@@ -18,5 +18,8 @@
   "bugs": {
     "url": "https://github.com/Keshavgoyal1308/Talent-IQ/issues"
   },
-  "homepage": "https://github.com/Keshavgoyal1308/Talent-IQ#readme"
+  "homepage": "https://github.com/Keshavgoyal1308/Talent-IQ#readme",
+  "dependencies": {
+    "react-hot-toast": "^2.6.0"
+  }
 }
