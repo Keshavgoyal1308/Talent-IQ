@@ -2,7 +2,7 @@ import React from 'react'
 import { SignedOut, SignInButton } from '@clerk/clerk-react'
 import { toast } from 'react-hot-toast';
 
-const Homepage = async () => {
+const Homepage =  () => {
   
   return (
     <div>
