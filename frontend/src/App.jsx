@@ -7,6 +7,7 @@ import ProblemsPage from './pages/Problemspage.jsx';
 import DasboardPage from './pages/Dashboardpage.jsx';
 import { useUser } from '@clerk/clerk-react';
 import { Toaster } from 'react-hot-toast';
+import ProblemPage from './pages/ProblemPage.jsx';
 
 function App() {
  
@@ -22,6 +23,7 @@ if(!isLoaded) return null;
         <Route path="/dashboard" element={isSignedIn ? <DasboardPage /> : <Navigate to="/" />} />
         <Route path="/about" element={<AboutPage />} />
         <Route path="/problems" element={isSignedIn ? <ProblemsPage /> : <Navigate to="/" />} />
+        <Route path="/problem/:id" element={isSignedIn ? <ProblemPage /> : <Navigate to="/" />} />
     </Routes>
       
       <Toaster position="top-left" toastOptions={{duration:3000}}/>
