@@ -81,7 +81,7 @@ export async function getSessionById(req, res) {
 
     const session = await Session.findById(id)
       .populate("host", "name email profileImage clerkId")
-      .populate("participant", "name email profileImage clerkId");
+      .populate("participants", "name email profileImage clerkId");
 
     if (!session) return res.status(404).json({ message: "Session not found" });
 
@@ -162,3 +162,4 @@ export async function endSession(req, res) {
     res.status(500).json({ message: "Internal Server Error" });
   }
 }
+
