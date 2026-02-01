@@ -1,6 +1,6 @@
 
 
-````md
+
 # Talent-IQ 🚀
 
 **Full-Stack Real-Time Technical Interview & Collaboration Platform**
@@ -82,7 +82,7 @@ This approach results in **low latency**, **high scalability**, and **conflict-f
 ```bash
 git clone https://github.com/your-username/talent-iq.git
 cd talent-iq
-````
+
 
 #### 2. Install dependencies
 
