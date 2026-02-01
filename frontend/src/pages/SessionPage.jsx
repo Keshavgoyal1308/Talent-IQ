@@ -1,5 +1,5 @@
 import { useUser } from "@clerk/clerk-react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useNavigate, useParams } from "react-router";
 import { useEndSession, useJoinSession, useSessionById } from "../hooks/useSessions";
 import { PROBLEMS } from "../data/problems";
@@ -38,33 +38,28 @@ function SessionPage() {
     isParticipant
   );
 
-  // find the problem data based on session problem title
+   // find the problem data based on session problem title
   const problemData = session?.problem
     ? Object.values(PROBLEMS).find((p) => p.title === session.problem)
     : null;
 
   const [selectedLanguage, setSelectedLanguage] = useState("javascript");
-  const [code, setCode] = useState(problemData?.starterCode?.[selectedLanguage] || "");
+   const [code, setCode] = useState(problemData?.starterCode?.[selectedLanguage] || "");
 
   // auto-join session if user is not already a participant and not the host
   useEffect(() => {
     if (!session || !user || loadingSession) return;
     if (isHost || isParticipant) return;
-
     joinSessionMutation.mutate(id, { onSuccess: refetch });
-
-    // remove the joinSessionMutation, refetch from dependencies to avoid infinite loop
+      // remove the joinSessionMutation, refetch from dependencies to avoid infinite loop
   }, [session, user, loadingSession, isHost, isParticipant, id]);
 
-  // redirect the "participant" when session ends
+  // Redirect if session completed
   useEffect(() => {
     if (!session || loadingSession) return;
-
     if (session.status === "completed") navigate("/dashboard");
   }, [session, loadingSession, navigate]);
-
-  // update code when problem loads or changes
-  useEffect(() => {
+   useEffect(() => {
     if (problemData?.starterCode?.[selectedLanguage]) {
       setCode(problemData.starterCode[selectedLanguage]);
     }
@@ -77,20 +72,25 @@ function SessionPage() {
     const starterCode = problemData?.starterCode?.[newLang] || "";
     setCode(starterCode);
     setOutput(null);
+    // Note: Yjs will handle syncing the text, we just change the syntax highlighting
   };
 
-  const handleRunCode = async () => {
+  const handleRunCode = async (codeFromEditor) => {
     setIsRunning(true);
     setOutput(null);
-
-    const result = await executeCode(selectedLanguage, code);
-    setOutput(result);
-    setIsRunning(false);
+    try {
+      const result = await executeCode(selectedLanguage, codeFromEditor);
+      setOutput(result);
+    } catch (error) {
+      console.error("Execution Error:", error);
+    } finally {
+      setIsRunning(false);
+    }
   };
 
   const handleEndSession = () => {
     if (confirm("Are you sure you want to end this session? All participants will be notified.")) {
-      // this will navigate the HOST to dashboard
+            // this will navigate the HOST to dashboard
       endSessionMutation.mutate(id, { onSuccess: () => navigate("/dashboard") });
     }
   };
@@ -104,10 +104,10 @@ function SessionPage() {
           {/* LEFT PANEL - CODE EDITOR & PROBLEM DETAILS */}
           <Panel defaultSize={50} minSize={30}>
             <PanelGroup direction="vertical">
-              {/* PROBLEM DSC PANEL */}
+              {/* PROBLEM DESCRIPTION */}
               <Panel defaultSize={50} minSize={20}>
                 <div className="h-full overflow-y-auto bg-base-200">
-                  {/* HEADER SECTION */}
+                   {/* HEADER SECTION */}
                   <div className="p-6 bg-base-100 border-b border-base-300">
                     <div className="flex items-start justify-between mb-3">
                       <div>
@@ -124,13 +124,8 @@ function SessionPage() {
                       </div>
 
                       <div className="flex items-center gap-3">
-                        <span
-                          className={`badge badge-lg ${getDifficultyBadgeClass(
-                            session?.difficulty
-                          )}`}
-                        >
-                          {session?.difficulty.slice(0, 1).toUpperCase() +
-                            session?.difficulty.slice(1) || "Easy"}
+                        <span className={`badge badge-lg ${getDifficultyBadgeClass(session?.difficulty)}`}>
+                          {session?.difficulty ? session.difficulty.charAt(0).toUpperCase() + session.difficulty.slice(1) : "Easy"}
                         </span>
                         {isHost && session?.status === "active" && (
                           <button
@@ -154,7 +149,7 @@ function SessionPage() {
                   </div>
 
                   <div className="p-6 space-y-6">
-                    {/* problem desc */}
+                    {/* Problem Description Rendering */}
                     {problemData?.description && (
                       <div className="bg-base-100 rounded-xl shadow-sm p-5 border border-base-300">
                         <h2 className="text-xl font-bold mb-4 text-base-content">Description</h2>
@@ -168,7 +163,7 @@ function SessionPage() {
                         </div>
                       </div>
                     )}
-
+                    
                     {/* examples section */}
                     {problemData?.examples && problemData.examples.length > 0 && (
                       <div className="bg-base-100 rounded-xl shadow-sm p-5 border border-base-300">
@@ -229,21 +224,23 @@ function SessionPage() {
 
               <PanelResizeHandle className="h-2 bg-base-300 hover:bg-primary transition-colors cursor-row-resize" />
 
+              {/* EDITOR & OUTPUT */}
               <Panel defaultSize={50} minSize={20}>
                 <PanelGroup direction="vertical">
                   <Panel defaultSize={70} minSize={30}>
                     <CodeEditorPanel
                       selectedLanguage={selectedLanguage}
                       code={code}
+                      sessionId={id} // CRITICAL FOR SYNC
                       isRunning={isRunning}
                       onLanguageChange={handleLanguageChange}
-                      onCodeChange={(value) => setCode(value)}
+                      
                       onRunCode={handleRunCode}
+                      starterCode={problemData?.starterCode?.[selectedLanguage]}
+                      isHost={isHost}
                     />
                   </Panel>
-
                   <PanelResizeHandle className="h-2 bg-base-300 hover:bg-primary transition-colors cursor-row-resize" />
-
                   <Panel defaultSize={30} minSize={15}>
                     <OutputPanel output={output} />
                   </Panel>
@@ -254,19 +251,19 @@ function SessionPage() {
 
           <PanelResizeHandle className="w-2 bg-base-300 hover:bg-primary transition-colors cursor-col-resize" />
 
-          {/* RIGHT PANEL - VIDEO CALLS & CHAT */}
+          {/* RIGHT PANEL - VIDEO & CHAT */}
           <Panel defaultSize={50} minSize={30}>
             <div className="h-full bg-base-200 p-4 overflow-auto">
               {isInitializingCall ? (
                 <div className="h-full flex items-center justify-center">
-                  <div className="text-center">
+ <div className="text-center">
                     <Loader2Icon className="w-12 h-12 mx-auto animate-spin text-primary mb-4" />
                     <p className="text-lg">Connecting to video call...</p>
                   </div>
                 </div>
               ) : !streamClient || !call ? (
                 <div className="h-full flex items-center justify-center">
-                  <div className="card bg-base-100 shadow-xl max-w-md">
+                 <div className="card bg-base-100 shadow-xl max-w-md">
                     <div className="card-body items-center text-center">
                       <div className="w-24 h-24 bg-error/10 rounded-full flex items-center justify-center mb-4">
                         <PhoneOffIcon className="w-12 h-12 text-error" />

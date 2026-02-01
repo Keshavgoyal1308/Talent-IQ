@@ -29,7 +29,10 @@
     "stream-chat": "^9.23.0",
     "stream-chat-react": "^13.13.4",
     "tailwindcss": "^4.1.18",
-    "vite": "^7.1.7"
+    "vite": "^7.1.7",
+    "y-monaco": "^0.1.6",
+    "y-webrtc": "^10.3.0",
+    "yjs": "^13.6.29"
   },
   "devDependencies": {
     "@eslint/js": "^9.36.0",
