@@ -139,22 +139,7 @@ Contributions are welcome!
    ```
 5. Open a Pull Request
 
----
-
-## 📄 License
-
-Distributed under the **MIT License**.
-See `LICENSE` for more information.
-
----
 
 ## ❤️ Acknowledgements
 
 Built with passion for developers preparing for real-world technical interviews.
-
-```
-
----
-
-
-```
